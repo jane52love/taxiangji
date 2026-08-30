@@ -8,6 +8,7 @@ dist/
 桥接/inbox/
 桥接/outbox/
 桥接/config.json
+桥接/certs/
 
 # 前端依赖（如未来引入构建工具）
 frontend/node_modules/

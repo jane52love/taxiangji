@@ -17,6 +17,9 @@ import json
 import os
 import random
 import re
+import socket
+import ssl
+import subprocess
 import sys
 import time
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -31,6 +34,7 @@ INBOX_IMAGES = os.path.join(INBOX, "images")
 MATERIALS = os.path.join(ROOT, "我的素材")
 KB_DIR = os.path.join(ROOT, "我的知识", "场景触发库")
 CONFIG_PATH = os.path.join(BRIDGE_DIR, "config.json")
+CERT_DIR = os.path.join(BRIDGE_DIR, "certs")
 
 for d in (INBOX, INBOX_IMAGES, OUTBOX):
     os.makedirs(d, exist_ok=True)
@@ -233,10 +237,45 @@ class Handler(SimpleHTTPRequestHandler):
         return self._json({"error": "not found"}, 404)
 
 
+def local_ip():
+    """取本机局域网 IP（不动真实网络）"""
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect(("8.8.8.8", 80))
+        return s.getsockname()[0]
+    except Exception:
+        return "127.0.0.1"
+    finally:
+        s.close()
+
+
+def ensure_cert():
+    """自签证书（浏览器安全策略要求 HTTPS 才能用麦克风），首次启动自动生成"""
+    cert = os.path.join(CERT_DIR, "cert.pem")
+    key = os.path.join(CERT_DIR, "key.pem")
+    if os.path.exists(cert) and os.path.exists(key):
+        return cert, key
+    os.makedirs(CERT_DIR, exist_ok=True)
+    subprocess.run(
+        ["openssl", "req", "-x509", "-newkey", "rsa:2048",
+         "-keyout", key, "-out", cert, "-days", "3650", "-nodes",
+         "-subj", "/CN=taxiangji",
+         "-addext", f"subjectAltName=DNS:localhost,IP:127.0.0.1,IP:{local_ip()}"],
+        check=True, capture_output=True,
+    )
+    return cert, key
+
+
 def main():
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 4179
+    cert, key = ensure_cert()
     server = ThreadingHTTPServer(("0.0.0.0", port), Handler)
-    print(f"她乡记桥接服务已启动: http://127.0.0.1:{port}/", flush=True)
+    ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    ctx.load_cert_chain(cert, key)
+    server.socket = ctx.wrap_socket(server.socket, server_side=True)
+    ip = local_ip()
+    print(f"她乡记桥接服务已启动(HTTPS): https://127.0.0.1:{port}/", flush=True)
+    print(f"手机访问: https://{ip}:{port}/（首次打开需在证书警告里选「继续访问」）", flush=True)
     print(f"文件桥: {BRIDGE_DIR}", flush=True)
     server.serve_forever()
 

@@ -533,6 +533,10 @@ function setupVoice() {
   const startPress = (e) => {
     e.preventDefault();
     try { voiceBtn.setPointerCapture(e.pointerId); } catch { /* */ }
+    if (!window.isSecureContext) {
+      setStatus("麦克风需要 HTTPS 访问：请把地址开头的 http 改成 https 再打开页面。");
+      return;
+    }
     if (listening) return;
     if (useFallback) return startWebSpeech();
     if (!navigator.mediaDevices || !window.MediaRecorder) {
