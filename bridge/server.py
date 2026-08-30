@@ -35,6 +35,12 @@ MATERIALS = os.path.join(ROOT, "我的素材")
 KB_DIR = os.path.join(ROOT, "我的知识", "场景触发库")
 CONFIG_PATH = os.path.join(BRIDGE_DIR, "config.json")
 CERT_DIR = os.path.join(BRIDGE_DIR, "certs")
+RULES_PATH = os.path.join(ROOT, ".trae", "rules", "project_rules.md")
+STYLE_PATH = os.path.join(ROOT, "我的知识", "金梅姐说话风格规则.md")
+KB_INDEX = os.path.join(KB_DIR, "00-主题索引.md")
+AGENT_MODEL_DEFAULT = "Qwen/Qwen3-VL-32B-Instruct"
+
+SESSIONS = {}  # sessionId -> [{role, content(纯文本)}] 内存会话历史
 
 for d in (INBOX, INBOX_IMAGES, OUTBOX):
     os.makedirs(d, exist_ok=True)
@@ -74,6 +80,106 @@ def load_stt_config():
     return None
 
 
+def read_file(path, limit=30000):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return f.read(limit)
+    except Exception:
+        return ""
+
+
+def load_agent_config():
+    """智能体配置：agent 段优先，缺省复用 stt 段的接入信息"""
+    try:
+        with open(CONFIG_PATH, encoding="utf-8") as f:
+            cfg = json.load(f) or {}
+    except Exception:
+        cfg = {}
+    agent = cfg.get("agent") or {}
+    stt = cfg.get("stt") or {}
+    return {
+        "api_key": agent.get("api_key") or stt.get("api_key"),
+        "base_url": agent.get("base_url") or stt.get("base_url"),
+        "model": agent.get("model") or AGENT_MODEL_DEFAULT,
+    }
+
+
+def build_system_prompt(user_text):
+    """注入项目规则 + 说话风格 + 触发词索引 + 命中主题素材"""
+    rules = read_file(RULES_PATH)
+    style = read_file(STYLE_PATH)
+    index = read_file(KB_INDEX)
+    kb_hits = ""
+    seen = set()
+    if index and user_text:
+        for m in re.finditer(r"^\|\s*\d+\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*\[([^]]+\.md)\]", index, re.M):
+            topic, triggers, fname = m.group(1), m.group(2), m.group(3).strip()
+            if fname in seen:
+                continue
+            for t in triggers.split("/"):
+                t = t.strip()
+                if t and t in user_text:
+                    seen.add(fname)
+                    body = read_file(os.path.join(KB_DIR, fname), 8000)
+                    if body:
+                        kb_hits += f"\n\n【命中主题素材 · {topic}】\n{body}"
+                    break
+    return (
+        "你是「她乡记」视频文案工作台的智能体，通过网页聊天界面服务金梅姐（木兰）。"
+        "严格按以下规则工作，所有交互使用中文。\n\n"
+        "==================== 项目规则 ====================\n\n"
+        + rules
+        + "\n\n==================== 金梅姐说话风格规则（文案用词必须过其中的黑名单检查） ====================\n\n"
+        + style
+        + "\n\n==================== 场景触发库索引（素材库目录） ====================\n\n"
+        + index
+        + "\n\n==================== 本次消息命中的主题素材 ====================\n"
+        + (kb_hits or "（未命中具体主题，按通用常识与风格规则创作，不要编造细节）")
+    )
+
+
+def call_agent(session_id, text, images):
+    agent = load_agent_config()
+    if not agent["api_key"]:
+        return None, "未配置大模型服务（桥接/config.json）"
+    system = build_system_prompt(text)
+    hist = SESSIONS.setdefault(session_id or "default", [])
+    content = [{"type": "text", "text": text or "请看这些图片。"}]
+    for du in (images or [])[:4]:
+        content.append({"type": "image_url", "image_url": {"url": du}})
+    msgs = [{"role": "system", "content": system}] + hist + [{"role": "user", "content": content}]
+    import urllib.error
+    import urllib.request
+    body = json.dumps({
+        "model": agent["model"],
+        "messages": msgs,
+        "max_tokens": 2500,
+        "temperature": 0.7,
+        "stream": False,
+    }).encode("utf-8")
+    req = urllib.request.Request(
+        agent["base_url"].rstrip("/") + "/v1/chat/completions",
+        data=body,
+        method="POST",
+        headers={"Authorization": "Bearer " + agent["api_key"], "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=180) as resp:
+            reply = json.loads(resp.read().decode("utf-8"))["choices"][0]["message"]["content"].strip()
+    except urllib.error.HTTPError as e:
+        try:
+            detail = e.read().decode("utf-8")[:300]
+        except Exception:
+            detail = ""
+        return None, f"大模型服务返回 {e.code} {detail}"
+    except Exception:
+        return None, "大模型服务连接失败，请检查网络"
+    hist.append({"role": "user", "content": text or "（发送了图片）"})
+    hist.append({"role": "assistant", "content": reply})
+    del hist[:-16]
+    return reply, None
+
+
 def call_stt(audio, audio_type):
     stt = load_stt_config()
     if not stt:
@@ -111,6 +217,9 @@ def call_stt(audio, audio_type):
 
 
 class Handler(SimpleHTTPRequestHandler):
+    # SSL 环境下 buffered reader 读 POST body 会异常阻塞，改用无缓冲读
+    rbufsize = 0
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=FRONTEND, **kwargs)
 
@@ -191,6 +300,33 @@ class Handler(SimpleHTTPRequestHandler):
             data = self._body()
         except Exception:
             return self._json({"error": "bad json"}, 400)
+
+        if u.path == "/api/chat":
+            print("[CHAT] 收到请求", flush=True)
+            n = int(self.headers.get("Content-Length", 0) or 0)
+            self.connection.settimeout(15)
+            raw = b""
+            try:
+                while len(raw) < n:
+                    part = self.rfile.read(n - len(raw))
+                    if not part:
+                        break
+                    raw += part
+            except Exception as e:
+                print(f"[CHAT] 读body异常 已读{len(raw)}/{n}: {e}", flush=True)
+            self.connection.settimeout(None)
+            print(f"[CHAT] body就绪 {len(raw)}/{n}", flush=True)
+            try:
+                data = json.loads(raw.decode("utf-8")) if raw else {}
+            except Exception:
+                return self._json({"error": "bad json"}, 400)
+            print(f"[CHAT] 开始调大模型 text={data.get('text', '')[:30]!r}", flush=True)
+            reply, err = call_agent(data.get("sessionId"), data.get("text"), data.get("images"))
+            if err:
+                print(f"[CHAT] 失败：{err}", flush=True)
+                return self._json({"error": err}, 503 if "未配置" in err else 502)
+            print(f"[CHAT] session={data.get('sessionId', 'default')} -> {reply[:50]!r}", flush=True)
+            return self._json({"replyMd": reply})
 
         if u.path == "/api/send":
             task = time.strftime("%H%M%S") + "-" + str(random.randint(1000, 9999))

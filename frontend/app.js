@@ -173,6 +173,26 @@ function renderUploadPreview() {
 
 /* ---------------- 智能体桥接 ---------------- */
 
+function agentSessionId() {
+  let id = sessionStorage.getItem("taxiangji-session");
+  if (!id) {
+    id = "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    sessionStorage.setItem("taxiangji-session", id);
+  }
+  return id;
+}
+
+async function agentChat(payload) {
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId: agentSessionId(), text: payload.text, images: (payload.images || []).map((i) => i.dataUrl) })
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.error) throw new Error(data.error || "bridge unavailable");
+  return data.replyMd;
+}
+
 async function bridgeSend(payload) {
   const res = await fetch("/api/send", {
     method: "POST",
@@ -215,12 +235,18 @@ async function sendToAgent(text) {
   renderMessages();
 
   try {
-    const replyMd = await bridgeSend(payload);
+    let replyMd;
+    try {
+      replyMd = await agentChat(payload);       // 真实智能体（内置大模型）
+    } catch (chatErr) {
+      if (chatErr.message === "bridge unavailable") throw chatErr;
+      replyMd = await bridgeSend(payload);      // 降级：TRAE 收件箱文件桥
+    }
     messages[typingIndex] = { role: "assistant", text: replyMd, md: true };
   } catch (err) {
     messages[typingIndex] = {
       role: "assistant",
-      text: `${err && err.message === "bridge unavailable" ? "桥接服务未启动，当前为本地演示模式。\n\n" : ""}${DEMO_REPLY}`
+      text: `${err && err.message === "bridge unavailable" ? "桥接服务未启动，当前为本地演示模式。\n\n" : `抱歉，刚才没回复成功：${err.message}\n\n`}${DEMO_REPLY}`
     };
   }
   renderMessages();
@@ -571,6 +597,7 @@ function bindEvents() {
   $("#brandHome").addEventListener("click", () => {
     $(".app-shell").classList.remove("chatting");
     $("#loadingSkill").classList.remove("active");
+    sessionStorage.removeItem("taxiangji-session"); // 新对话
     messages = [];
     renderMessages();
     showScreen("homeScreen");
