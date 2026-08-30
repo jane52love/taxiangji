@@ -12,3 +12,6 @@ dist/
 
 # 前端依赖（如未来引入构建工具）
 frontend/node_modules/
+
+__pycache__/
+*.pyc
