@@ -45,12 +45,12 @@
   "stt": {
     "base_url": "https://api.siliconflow.cn",
     "api_key": "sk-xxx",
-    "model": "FunAudioLLM/SenseVoiceSmall"
+    "model": "TeleAI/TeleSpeechASR"
   }
 }
 ```
 
-- 兼容任何 OpenAI `/v1/audio/transcriptions` 格式的服务（硅基流动 SenseVoice、OpenAI whisper 等）
+- 兼容任何 OpenAI `/v1/audio/transcriptions` 格式的服务（硅基流动 TeleSpeechASR、OpenAI whisper 等）
 - 未配置时返回 503，前端自动降级浏览器识别（电脑 Chrome 可用，手机国内网络通常不通），再不行提示文字输入
 
 ## 素材归档

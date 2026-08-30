@@ -2,6 +2,6 @@
   "stt": {
     "base_url": "https://api.siliconflow.cn",
     "api_key": "在这里粘贴你的 API Key",
-    "model": "FunAudioLLM/SenseVoiceSmall"
+    "model": "TeleAI/TeleSpeechASR"
   }
 }
