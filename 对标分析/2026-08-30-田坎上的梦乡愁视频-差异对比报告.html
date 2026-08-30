@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>对标差异分析 · 田坎上的梦 vs 金梅姐定位（含金东大酒店互照）</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root { --bg:#f6f4fb; --bg2:#ffffff; --bg3:#f0ecf7; --ink:#2e2a40; --muted:#6b6580; --muted2:#9b95ad; --rule:rgba(90,70,140,0.1); --accent:#7c5cbf; --accent2:#d4615a; --accent3:#b8915e; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--ink); font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; line-height:1.75; }
+.wrap { max-width:1080px; margin:0 auto; padding:0 20px 80px; }
+.hero { padding:72px 0 40px; }
+.hero .kicker { color:var(--accent); font-size:13px; letter-spacing:3px; margin-bottom:14px; }
+.hero h1 { font-size:44px; line-height:1.25; font-family:Georgia,"Songti SC",serif; margin-bottom:16px; }
+.hero .sub { font-size:15px; color:var(--muted); max-width:760px; }
+.hero .meta { margin-top:22px; font-size:13px; color:var(--muted2); }
+.hero .meta b { color:var(--accent); }
+section { margin-top:64px; }
+.sec-head { display:flex; align-items:baseline; gap:14px; margin-bottom:8px; }
+.sec-head .num { font-size:32px; font-family:Georgia,serif; color:var(--accent); opacity:.55; }
+.sec-head h2 { font-size:20px; }
+.sec-desc { font-size:13px; color:var(--muted); margin-bottom:22px; }
+.card { background:var(--bg2); border:1px solid var(--rule); border-radius:14px; padding:26px 28px; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th, td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top; }
+th { font-size:12.5px; color:var(--muted); font-weight:600; background:var(--bg3); position:sticky; top:0; }
+td.a { background:rgba(124,92,191,0.05); }
+td b { color:var(--accent); }
+.tag { display:inline-block; font-size:12px; padding:2px 10px; border-radius:20px; background:var(--bg3); color:var(--muted); margin:2px 3px 2px 0; }
+.tag.hot { background:rgba(124,92,191,0.14); color:var(--accent); }
+.path-stage { border-left:3px solid var(--rule); padding:14px 18px; margin-bottom:14px; background:var(--bg2); border-radius:0 10px 10px 0; }
+.path-stage .stage-t { font-weight:700; font-size:14.5px; margin-bottom:4px; }
+.path-stage .stage-t small { font-weight:400; color:var(--muted2); margin-left:8px; }
+.path-stage .psy { color:var(--accent3); font-size:13px; margin-bottom:6px; }
+.vs { display:grid; grid-template-columns:1fr 1fr; gap:14px; font-size:13.5px; }
+.vs .a { border:1px solid rgba(124,92,191,.25); border-radius:10px; padding:12px 14px; background:rgba(124,92,191,.04); }
+.vs .b { border:1px solid rgba(212,97,90,.25); border-radius:10px; padding:12px 14px; background:rgba(212,97,90,.04); }
+.vs .lab { font-size:11.5px; color:var(--muted2); letter-spacing:1px; margin-bottom:6px; }
+.quote { border-left:3px solid var(--accent); padding:12px 18px; background:var(--bg3); border-radius:0 10px 10px 0; font-size:15px; margin:14px 0; }
+.chart { width:100%; height:320px; }
+.sum { margin-top:64px; background:linear-gradient(135deg,#efe9fa,#f7e9e7); border-radius:16px; padding:38px 34px; }
+.sum h2 { font-family:Georgia,"Songti SC",serif; font-size:26px; margin-bottom:14px; }
+.sum .stats { display:flex; gap:34px; margin-top:22px; flex-wrap:wrap; }
+.sum .stat b { display:block; font-size:26px; color:var(--accent); font-family:Georgia,serif; }
+.sum .stat span { font-size:12.5px; color:var(--muted); }
+.note { font-size:12.5px; color:var(--muted2); margin-top:10px; }
+.mirror { border:1px dashed rgba(124,92,191,.4); border-radius:12px; padding:18px 22px; margin-top:14px; background:rgba(124,92,191,.03); font-size:13.5px; }
+.mirror b { color:var(--accent); }
+@media (max-width:768px){ .grid2,.vs{ grid-template-columns:1fr; } .hero h1{ font-size:32px; } .sum .stats{ gap:20px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <div class="kicker">对标差异分析报告 · 第二样本</div>
+  <h1>田坎上的梦 vs 金梅姐定位<br>乡愁情绪型爆款拆解</h1>
+  <div class="sub">样本：《他乡再好，没有亲人，故乡再差……》（2026-03-02 07:12 发布）。本报告同时与上一份样本（金东大酒店·茭白收获）做双对标互照，回答一个问题：<b style="color:var(--accent)">情绪流爆款和人物流长线，金梅姐该学谁？</b></div>
+  <div class="meta">报告生成 2026-08-30 · 分析框架 <b>account-diff-compare · 10 层对比 + 双样本互照</b></div>
+</div>
+
+<section>
+  <div class="sec-head"><span class="num">01</span><h2>样本与账号概览</h2></div>
+  <div class="sec-desc">A=田坎上的梦（实抓）；B=金梅姐定位；参考列=金东大酒店（上一份报告样本）。</div>
+  <div class="card">
+    <table>
+      <tr><th>维度</th><th>A · 田坎上的梦</th><th>B · 金梅姐定位</th><th>参考 · 金东大酒店</th></tr>
+      <tr><td>粉丝</td><td class="a"><b>2.5万</b></td><td>未起量</td><td>53.8万</td></tr>
+      <tr><td>获赞</td><td class="a">72.1万</td><td>—</td><td>1060.6万</td></tr>
+      <tr><td>样本数据</td><td class="a">赞 7.2万 · 评 5912 · 藏 1.9万 · 转 1.1万</td><td>—</td><td>赞 1.9万 · 评 977 · 藏 1784 · 转 819</td></tr>
+      <tr><td>爆款效率</td><td class="a"><b>单条赞 = 粉丝盘 288%</b></td><td>目标：单条破圈</td><td>单条赞 ≈ 粉丝盘 3.5%</td></tr>
+      <tr><td>路线</td><td class="a">乡愁情绪文案 + 老家风景</td><td>人物 + 事实细节 + 朴实口播</td><td>人物剧情 + 农事纪实 + 带货闭环</td></tr>
+      <tr><td>发布时间</td><td class="a">07:12（正月返城期清晨 = 离乡时刻）</td><td>建议同样踩情绪时点</td><td>18:20（晚饭流量）</td></tr>
+    </table>
+    <div class="quote">他乡再好，没有亲人，故乡再差，日夜思念，为了生活不得不远走他乡，回来前的喜悦，离别时的不舍，都是我们这辈子的命啊…</div>
+    <div><span class="tag hot">#老家的风景</span><span class="tag">#乡愁记忆</span><span class="tag">#农村老家</span><span class="note" style="display:inline">仅 3 个标签，无平台活动标签，纯靠内容自传播爆掉。</span></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">02</span><h2>账号画像对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>维度</th><th>田坎上的梦（A）</th><th>金梅姐定位（B）</th><th>启示</th></tr>
+      <tr><td>类型</td><td class="a">情绪流单点爆款型</td><td>信任流长线人设型</td><td>A 证明小号无资源也能爆；但见下条</td></tr>
+      <tr><td>涨粉效率</td><td class="a">低：7.2万赞账号仅 2.5万粉</td><td>目标：看完想关注</td><td><b>风景+文案让人点赞，人物才让人关注（skill 层8 验证）</b></td></tr>
+      <tr><td>人设体系</td><td class="a">无固定人物出镜</td><td>妈妈/家人可出镜</td><td>这是 A 与金东最大的差距项</td></tr>
+      <tr><td>内容引擎</td><td class="a">乡愁情绪，一招重复</td><td>22 主题农事/食物库</td><td>情绪会疲劳；事实+人物可持续</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">03</span><h2>内容分类与形式对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>分类</th><th>A（本样本）</th><th>金东（对照）</th><th>金梅姐建议</th></tr>
+      <tr><td>主题</td><td class="a">乡愁（离家/思乡）</td><td>农事收获（茭白）</td><td>金梅姐两类都能做：事实做骨，乡愁做标题</td></tr>
+      <tr><td>形式</td><td class="a">风景/劳作画面 + 情绪文案（字幕位）</td><td>全程旁白纪实</td><td>金梅姐主用后者，前者借标题位</td></tr>
+      <tr><td>时长</td><td class="a">短（推测 15-30 秒）</td><td>约 4 分钟</td><td>60-90 秒起步</td></tr>
+      <tr><td>情绪</td><td class="a">酸楚 + 命定感（共鸣拉满）</td><td>温暖 + 自豪</td><td>金梅姐以温暖为主，酸楚只点到为止（风格规则：不煽情）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">04</span><h2>文案风格对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>维度</th><th>A 文案</th><th>金东文案（对照）</th><th>B 金梅姐规则</th></tr>
+      <tr><td>文案</td><td class="a">他乡再好，没有亲人，故乡再差，日夜思念……都是我们这辈子的命啊…</td><td>日晒雨淋，风吹泥浸……辛苦不被辜负！</td><td>「今天回来喽，锅里给你们留了土灶饭」</td></tr>
+      <tr><td>结构</td><td class="a">对仗 x2 + 递进 + 命定收尾</td><td>四字排比 + 拟人</td><td>主语先行 + 事实细节 + 感官收尾</td></tr>
+      <tr><td>视角</td><td class="a">「我们」（集体代言）</td><td>「庄稼人」（无主语）</td><td>「我」（第一人称，真事）</td></tr>
+      <tr><td>杀手锏</td><td class="a"><b>替观众说出说不出的话 → 转发 1.1万</b></td><td>给产地知识 → 收藏</td><td>金梅姐可两招都用，但用自己的事说</td></tr>
+    </table>
+    <div class="note">A 的「他乡再好，没有亲人；故乡再差，日夜思念」是民间对仗俗语结构，不是文学修辞——它比金东的排比更贴口语。金梅姐规则允许「口语+对比」（2-2.5 档），可以借这种对仗骨架、装自己的真事。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">05</span><h2>文案诗意度对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>样本</th><th>评分</th><th>判断</th></tr>
+      <tr><td>田坎上的梦</td><td class="a"><b>3.5-4</b></td><td>对仗密集但语感是俗语，民间味压住了文学腔</td></tr>
+      <tr><td>金东大酒店</td><td class="a">3</td><td>四字排比连用，开始文学化</td></tr>
+      <tr><td>金梅姐规则</td><td class="a"><b>≤2.5</b></td><td>借对仗骨架可以，一句视频最多一处</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">06</span><h2>用户心理路径对比（核心）</h2></div>
+  <div class="sec-desc">A 是「文案钩子型」路径，与金东的「情节沉浸型」完全不同。</div>
+  <div class="path-stage"><div class="stage-t">触发期 <small>0-0.5秒</small></div><div class="psy">心理：这是什么？→ 老家风景（土屋/田坎/山路）直接唤起记忆</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>故乡画面即钩子</div><div class="b"><div class="lab">金梅姐对应</div>同题可用：回村路、炊烟、老屋门口</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">判断期 <small>0.5-3秒</small></div><div class="psy">心理：要不要看？→ 「他乡再好，没有亲人」前 8 字就钉住漂泊者</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>对仗钩子，二选一式拉扯</div><div class="b"><div class="lab">金梅姐对应</div>学这个：标题用对仗说真事，如「城里工资高，家里妈老了」</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">投入期 <small>3-10秒</small></div><div class="psy">心理：他在做什么？→ 无剧情，靠文案递进「为了生活不得不远走他乡」</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>情绪线替代故事线</div><div class="b"><div class="lab">金梅姐对应</div>金梅姐有真故事可用（金东式），情绪线只做标题层</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">沉浸期 <small>10秒-结尾</small></div><div class="psy">心理：然后呢？→ 「回来前的喜悦，离别时的不舍」把双向拉扯说透</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>情绪叠到顶</div><div class="b"><div class="lab">金梅姐对应</div>同样的拉扯用细节演：走的时候妈妈往车里塞菜</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">决策期 <small>看完</small></div><div class="psy">心理：要做什么？→ 「都是我们这辈子的命啊」→ 替我转了（转发 1.1万）</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>命定感收尾触发「代转」</div><div class="b"><div class="lab">金梅姐对应</div>收尾别用「命」（太重、踩煽情线），用热气腾腾的具体物收</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">留存期 <small>看完之后</small></div><div class="psy">心理：还想看下一条吗？→ <b>A 的最大短板：没有下一条的理由</b>（7.2万赞账号仅 2.5万粉）</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>无人物无系列，看完即走</div><div class="b"><div class="lab">金梅姐对应</div><b>必须补上金东那一半</b>：固定人物 + 22 主题追更结构</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">07</span><h2>心理触发层对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>触发层</th><th>田坎上的梦（A）</th><th>金东（对照）</th><th>金梅姐可达层</th></tr>
+      <tr><td>一层 · 共鸣</td><td class="a">✓✓ 极强（乡愁普遍命题）</td><td>✓ 农人辛苦</td><td>✓</td></tr>
+      <tr><td>二层 · 好奇</td><td class="a">△ 弱（无新知）</td><td>✓✓ 山泉水茭白</td><td>✓✓ 22 主题全是新知素材</td></tr>
+      <tr><td>三层 · 互动</td><td class="a">✓✓ 转 1.1万（代转效应）</td><td>△ 评论 977 无钩子</td><td><b>合并打法：新知钩收藏 + 提问钩评论</b></td></tr>
+    </table>
+    <div class="note">A 证明了：踩中普遍情绪时，连平台活动标签都不需要，内容自己会长腿。但这种爆款不可稳定复制；金东结构才可复制。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">08</span><h2>流量逻辑对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>流量池</th><th>田坎上的梦</th><th>金东</th><th>金梅姐</th></tr>
+      <tr><td>共鸣层（想回家的人）</td><td class="a">✓✓ 主引擎</td><td>✓</td><td>标题层用</td></tr>
+      <tr><td>好奇层（城市人看新鲜）</td><td class="a">✗</td><td>✓✓</td><td>✓✓ 主引擎（土灶/八大碗/晒秋）</td></tr>
+      <tr><td>认同层（农村人看自己）</td><td class="a">✓✓</td><td>✓</td><td>✓</td></tr>
+    </table>
+    <div class="note">互动率对比（互动量/赞）：田坎 ≈50%（评 8.2% + 藏 26% + 转 15%），金东 ≈19%。情绪内容转藏转极高；但粉丝转化极低——流量结构与留存结构是两回事。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">09</span><h2>人设逻辑对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>要素</th><th>田坎上的梦</th><th>金东</th><th>金梅姐</th></tr>
+      <tr><td>身份</td><td class="a">无面目账号（代言人视角）</td><td>特产店主 + 庄稼人家庭</td><td>家乡女儿，真实姓名出镜</td></tr>
+      <tr><td>关系</td><td class="a">与观众「同为漂泊者」</td><td>奕琴家血缘线</td><td>与妈妈/家人血缘线（同金东）</td></tr>
+      <tr><td>态度</td><td class="a">叹命，替观众叹息</td><td>不卖惨，平视辛苦</td><td>不叹命不煽情，只讲真事（规则红线）</td></tr>
+      <tr><td>信任链路</td><td class="a">情绪共鸣 ≠ 人设信任，难沉淀</td><td>真实→持续→信任→关注 ✓</td><td>同金东链路 + 乡音加持</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">10</span><h2>标签策略对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>层</th><th>田坎上的梦</th><th>金东</th><th>金梅姐建议</th></tr>
+      <tr><td>大流量池</td><td class="a">✗ 无</td><td>#新农人计划 ✓</td><td>每条必带（不可省）</td></tr>
+      <tr><td>中流量池</td><td class="a">#乡愁记忆 #农村老家 ✓</td><td>#助农 #三农 ✓</td><td>#乡村生活 #三农</td></tr>
+      <tr><td>小流量池</td><td class="a">#老家的风景 ✓</td><td>#茭白 ✓</td><td>主题词：#茭白 #土灶 #晒秋</td></tr>
+    </table>
+    <div class="note">A 缺大流量池标签仍爆——情绪自传播可绕过标签；但这是幸存者样本，金梅姐起号期不赌运气，三层标签全配。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">11</span><h2>七层底层逻辑对照</h2></div>
+  <div class="grid2">
+    <div class="card"><b>1 身份定位</b><p class="note" style="margin:6px 0 10px">心理：「我想了解这个人」</p><div class="vs"><div class="a"><div class="lab">田坎</div>无身份，只有情绪</div><div class="b"><div class="lab">金梅姐</div>金东模式：身份先行</div></div></div>
+    <div class="card"><b>2 信任链路</b><p class="note" style="margin:6px 0 10px">心理：「我信他说的」</p><div class="vs"><div class="a"><div class="lab">田坎</div>共鸣代替不了信任</div><div class="b"><div class="lab">金梅姐</div>真事真名，链路完整</div></div></div>
+    <div class="card"><b>3 情绪深度</b><p class="note" style="margin:6px 0 10px">心理：「我被触动了」</p><div class="vs"><div class="a"><div class="lab">田坎</div>乡愁拉满（其最强项）</div><div class="b"><div class="lab">金梅姐</div>借半分即可，别叹命</div></div></div>
+    <div class="card"><b>4 内容护城河</b><p class="note" style="margin:6px 0 10px">心理：「只有他有」</p><div class="vs"><div class="a"><div class="lab">田坎</div>乡愁谁都能拍，无护城河</div><div class="b"><div class="lab">金梅姐</div>22 主题 + 本人乡音，不可复制</div></div></div>
+    <div class="card"><b>5 算法标签</b><p class="note" style="margin:6px 0 10px">心理：「这就是我想看的」</p><div class="vs"><div class="a"><div class="lab">田坎</div>无标签靠情绪破圈（不可复制）</div><div class="b"><div class="lab">金梅姐</div>三层标签全配，稳</div></div></div>
+    <div class="card"><b>6 心理路径</b><p class="note" style="margin:6px 0 10px">心理：「我想看下一条」</p><div class="vs"><div class="a"><div class="lab">田坎</div>赞完即走（留存短板实锤）</div><div class="b"><div class="lab">金梅姐</div>人物+系列=追更</div></div></div>
+    <div class="card"><b>7 信息聚焦</b><p class="note" style="margin:6px 0 10px">心理：「我知道在看什么」</p><div class="vs"><div class="a"><div class="lab">田坎</div>一个情绪一件事 ✓</div><div class="b"><div class="lab">金梅姐</div>一题一拍 ✓ 同构</div></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">12</span><h2>数据可视化：双样本互照</h2></div>
+  <div class="sec-desc">左：两样本互动结构对比。右：粉丝盘 vs 单条爆款（爆款效率的本质差异）。</div>
+  <div class="grid2">
+    <div class="card"><div id="c1" class="chart"></div></div>
+    <div class="card"><div id="c2" class="chart"></div></div>
+  </div>
+</section>
+
+<div class="sum">
+  <h2>差异总结 · 双样本互照结论</h2>
+  <p><b>田坎上的梦</b>证明了情绪文案的爆发力（小号 7.2万赞、转发 1.1万），也暴露了它的天花板（2.5万粉，看完即走）。<b>金东大酒店</b>证明了人物剧情的长线价值（53.8万粉、带货闭环），但互动钩子弱。两条路合起来才是答案：</p>
+  <p style="margin-top:10px"><b style="color:var(--accent)">金梅姐配方 = 金东的骨架（固定人物 + 纪实细节 + 三层标签）+ 田坎的标题（对仗口语钩子，如「城里工资高，家里妈老了」）+ 自己的嘴（第一人称真事，不叹命不煽情）</b></p>
+  <div class="stats">
+    <div class="stat"><b>288%</b><span>田坎单条赞/粉丝盘（爆款效率）</span></div>
+    <div class="stat"><b>≈50%</b><span>田坎互动率（金东约 19%）</span></div>
+    <div class="stat"><b>2.5万</b><span>7.2万赞只换来 2.5万粉（无人物的代价）</span></div>
+    <div class="stat"><b>07:12</b><span>发布时间 = 离乡时刻（情绪踩点）</span></div>
+  </div>
+</section>
+
+</div>
+<script>
+const C = { accent:'#7c5cbf', accent2:'#d4615a', accent3:'#b8915e', ink:'#2e2a40', muted:'#6b6580' };
+const mk = (id, opt) => { const el = document.getElementById(id); if (!el) return; const c = echarts.init(el, null, { renderer:'svg' }); c.setOption(Object.assign({ tooltip:{ trigger:'axis' }, animation:false, textStyle:{ color:C.muted } }, opt)); window.addEventListener('resize', () => c.resize()); };
+mk('c1', {
+  title:{ text:'双样本互动结构对比', left:'center', textStyle:{ color:C.ink, fontSize:14 } },
+  legend:{ top:28, data:['田坎上的梦','金东大酒店'], textStyle:{ color:C.muted } },
+  xAxis:{ type:'category', data:['赞','评论','收藏','转发'] },
+  yAxis:{ type:'log', logBase:10 },
+  series:[
+    { name:'田坎上的梦', type:'bar', data:[72000,5912,19000,11000], itemStyle:{ color:C.accent }, barWidth:'26%' },
+    { name:'金东大酒店', type:'bar', data:[19000,977,1784,819], itemStyle:{ color:C.accent2 }, barWidth:'26%' }
+  ]
+});
+mk('c2', {
+  title:{ text:'粉丝盘 vs 单条获赞（万）', left:'center', textStyle:{ color:C.ink, fontSize:14 } },
+  legend:{ top:28, data:['粉丝量','样本单条赞'], textStyle:{ color:C.muted } },
+  xAxis:{ type:'category', data:['田坎上的梦','金东大酒店'] },
+  yAxis:{ type:'log', logBase:10 },
+  series:[
+    { name:'粉丝量', type:'bar', data:[2.5,53.8], itemStyle:{ color:C.accent3 }, barWidth:'30%', label:{ show:true, position:'top', color:C.muted } },
+    { name:'样本单条赞', type:'bar', data:[7.2,1.9], itemStyle:{ color:C.accent }, barWidth:'30%', label:{ show:true, position:'top', color:C.muted } }
+  ]
+});
+</script>
+</body>
+</html>
