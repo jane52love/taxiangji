@@ -433,6 +433,10 @@ body.text-mode .voice-display {
 
 .voice-display.recording {
   color: var(--red);
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .input-bar {
