@@ -453,6 +453,28 @@ body.text-mode .voice-display {
 
 .voice-display.recording {
   color: var(--red);
+  animation: rec-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes rec-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(197, 90, 74, 0.35); }
+  50% { box-shadow: 0 0 0 12px rgba(197, 90, 74, 0); }
+}
+
+.voice-meter {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  height: 18px;
+  margin-top: 8px;
+}
+
+.voice-meter span {
+  width: 3px;
+  height: 3px;
+  background: var(--red);
+  border-radius: 2px;
+  transition: height 0.08s ease-out;
 }
 
 .input-bar {

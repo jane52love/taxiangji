@@ -398,6 +398,43 @@ function setupVoice() {
   const setStatus = (t) => { statusEl.textContent = t; };
   let recorder = null, chunks = [], micStream = null, listening = false;
   let useFallback = false, recognition = null, finalText = "";
+  let audioCtx = null, analyser = null, rafId = 0;
+
+  /* --- 录音中的实时音量反馈（证明声音被收录） --- */
+  function startMeter() {
+    let meter = voiceBtn.querySelector(".voice-meter");
+    if (!meter) {
+      meter = document.createElement("div");
+      meter.className = "voice-meter";
+      meter.innerHTML = "<span></span>".repeat(5);
+      voiceBtn.appendChild(meter);
+    }
+    const bars = [...meter.querySelectorAll("span")];
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      audioCtx.createMediaStreamSource(micStream).connect(analyser);
+    } catch { return; }
+    const data = new Uint8Array(analyser.frequencyBinCount);
+    const tick = () => {
+      if (!analyser) return;
+      analyser.getByteFrequencyData(data);
+      bars.forEach((bar, i) => {
+        const v = data[i * 6 + 2] / 255;
+        bar.style.height = Math.max(3, Math.round(v * 18)) + "px";
+      });
+      rafId = requestAnimationFrame(tick);
+    };
+    tick();
+  }
+
+  function stopMeter() {
+    cancelAnimationFrame(rafId);
+    analyser = null;
+    if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
+  }
 
   /* --- 主路径：按住录音 → 松开整段送服务端转写 --- */
   async function startRecording() {
@@ -410,10 +447,12 @@ function setupVoice() {
     recorder.start(250);
     listening = true;
     voiceBtn.classList.add("recording");
-    setStatus("正在听，请说你的场景和想表达的话……");
+    startMeter();
+    setStatus("录音中，请说你的场景和想表达的话（松开结束）……");
   }
 
   async function transcribe() {
+    stopMeter();
     if (micStream) { micStream.getTracks().forEach((t) => t.stop()); micStream = null; }
     const blob = new Blob(chunks, { type: (recorder && recorder.mimeType) || "audio/webm" });
     recorder = null;
@@ -501,12 +540,14 @@ function setupVoice() {
       setStatus("当前环境不支持语音输入，请改用文字。");
       return;
     }
-    startRecording().catch((err) => setStatus("无法访问麦克风：" + (err.message || err.name)));
+    startRecording()
+      .catch((err) => { stopMeter(); setStatus("无法访问麦克风：" + (err.message || err.name)); });
   };
   const stopPress = () => {
     if (!listening) return;
     listening = false;
     voiceBtn.classList.remove("recording");
+    stopMeter();
     if (recorder && recorder.state !== "inactive") { try { recorder.stop(); } catch { /* */ } }
     if (recognition) { try { recognition.stop(); } catch { /* */ } }
   };
