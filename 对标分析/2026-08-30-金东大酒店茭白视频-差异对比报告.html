@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>对标差异分析 · 金东大酒店 vs 金梅姐定位</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+:root {
+  --bg: #f6f4fb; --bg2: #ffffff; --bg3: #f0ecf7;
+  --ink: #2e2a40; --muted: #6b6580; --muted2: #9b95ad;
+  --rule: rgba(90,70,140,0.1);
+  --accent: #7c5cbf; --accent2: #d4615a; --accent3: #b8915e;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--ink); font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif; line-height:1.75; }
+.wrap { max-width:1080px; margin:0 auto; padding:0 20px 80px; }
+.hero { padding:72px 0 40px; }
+.hero .kicker { color:var(--accent); font-size:13px; letter-spacing:3px; margin-bottom:14px; }
+.hero h1 { font-size:44px; line-height:1.25; font-family:Georgia,"Songti SC",serif; margin-bottom:16px; }
+.hero .sub { font-size:15px; color:var(--muted); max-width:720px; }
+.hero .meta { margin-top:22px; font-size:13px; color:var(--muted2); }
+.hero .meta b { color:var(--accent); }
+section { margin-top:64px; }
+.sec-head { display:flex; align-items:baseline; gap:14px; margin-bottom:8px; }
+.sec-head .num { font-size:32px; font-family:Georgia,serif; color:var(--accent); opacity:.55; }
+.sec-head h2 { font-size:20px; }
+.sec-desc { font-size:13px; color:var(--muted); margin-bottom:22px; }
+.card { background:var(--bg2); border:1px solid var(--rule); border-radius:14px; padding:26px 28px; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+th, td { padding:10px 12px; text-align:left; border-bottom:1px solid var(--rule); vertical-align:top; }
+th { font-size:12.5px; color:var(--muted); font-weight:600; background:var(--bg3); position:sticky; top:0; }
+td.a { background:rgba(124,92,191,0.05); }
+td b { color:var(--accent); }
+.tag { display:inline-block; font-size:12px; padding:2px 10px; border-radius:20px; background:var(--bg3); color:var(--muted); margin:2px 3px 2px 0; }
+.tag.hot { background:rgba(124,92,191,0.14); color:var(--accent); }
+.path-stage { border-left:3px solid var(--rule); padding:14px 18px; margin-bottom:14px; background:var(--bg2); border-radius:0 10px 10px 0; }
+.path-stage .stage-t { font-weight:700; font-size:14.5px; margin-bottom:4px; }
+.path-stage .stage-t small { font-weight:400; color:var(--muted2); margin-left:8px; }
+.path-stage .psy { color:var(--accent3); font-size:13px; margin-bottom:6px; }
+.vs { display:grid; grid-template-columns:1fr 1fr; gap:14px; font-size:13.5px; }
+.vs .a { border:1px solid rgba(124,92,191,.25); border-radius:10px; padding:12px 14px; background:rgba(124,92,191,.04); }
+.vs .b { border:1px solid rgba(212,97,90,.25); border-radius:10px; padding:12px 14px; background:rgba(212,97,90,.04); }
+.vs .lab { font-size:11.5px; color:var(--muted2); letter-spacing:1px; margin-bottom:6px; }
+.quote { border-left:3px solid var(--accent); padding:12px 18px; background:var(--bg3); border-radius:0 10px 10px 0; font-size:15px; margin:14px 0; }
+.chart { width:100%; height:320px; }
+.sum { margin-top:64px; background:linear-gradient(135deg,#efe9fa,#f7e9e7); border-radius:16px; padding:38px 34px; }
+.sum h2 { font-family:Georgia,"Songti SC",serif; font-size:26px; margin-bottom:14px; }
+.sum .stats { display:flex; gap:34px; margin-top:22px; flex-wrap:wrap; }
+.sum .stat b { display:block; font-size:26px; color:var(--accent); font-family:Georgia,serif; }
+.sum .stat span { font-size:12.5px; color:var(--muted); }
+.note { font-size:12.5px; color:var(--muted2); margin-top:10px; }
+@media (max-width:768px){ .grid2,.vs{ grid-template-columns:1fr; } .hero h1{ font-size:32px; } .sum .stats{ gap:20px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hero">
+  <div class="kicker">对标差异分析报告 · SKILL 实测</div>
+  <h1>金东大酒店 vs 金梅姐定位<br>同类乡村内容差异拆解</h1>
+  <div class="sub">样本：金东大酒店《又到了茭白收获的季节》（2026-07-07 发布，时长约 4 分钟）。以「金梅姐说话风格规则 + 场景触发库·茭白主题」作为 B 方定位进行差距分析。所有对标数据来自抖音页面实抓。</div>
+  <div class="meta">报告生成 2026-08-30 · 分析框架 <b>account-diff-compare · 10 层对比</b></div>
+</div>
+
+<section>
+  <div class="sec-head"><span class="num">01</span><h2>样本与账号概览</h2></div>
+  <div class="sec-desc">左：对标账号实抓数据。右：金梅姐当前定位（非运营数据，为风格与内容资产盘点）。</div>
+  <div class="grid2">
+    <div class="card">
+      <h3 style="margin-bottom:10px">A · 金东大酒店（金东家乡特产）</h3>
+      <table>
+        <tr><td>粉丝</td><td><b>53.8万</b></td></tr>
+        <tr><td>获赞</td><td><b>1060.6万</b></td></tr>
+        <tr><td>样本视频</td><td>《又到了茭白收获的季节》约4分钟</td></tr>
+        <tr><td>样本数据</td><td>赞 1.9万 · 评 977 · 藏 1784 · 转 819</td></tr>
+        <tr><td>人设要素</td><td>「奕琴家」家庭连续剧：奕琴 + 妈妈 + 孩子们，固定人物出镜</td></tr>
+        <tr><td>带货闭环</td><td>酒店/家乡特产账号 → 茭白种植 → 收获售卖，内容即供应链</td></tr>
+      </table>
+      <div class="quote">又到了茭白收获的季节，日晒雨淋，风吹泥浸，庄稼人守着这片茭白田，只愿日复一日的辛苦不被辜负！</div>
+      <div>
+        <span class="tag hot">#新农人计划</span><span class="tag">#助农</span><span class="tag">#三农</span><span class="tag">#我的乡村生活</span><span class="tag">#茭白</span>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:10px">B · 金梅姐（目标定位）</h3>
+      <table>
+        <tr><td>定位</td><td>家乡生活记录者（木兰）</td></tr>
+        <tr><td>内容资产</td><td>22 个场景主题库（茭白、晒秋腌菜、土灶、八大碗…）</td></tr>
+        <tr><td>风格基调</td><td>朴实 &gt; 诗意（诗意度 ≤2.5），口语 + 细节，不编造</td></tr>
+        <tr><td>人设要素</td><td>妈妈、家人、乡亲（与 A 同构的「家庭连续剧」潜质）</td></tr>
+        <tr><td>现状</td><td>起号阶段，运营数据未产生</td></tr>
+      </table>
+      <div class="quote" style="border-left-color:var(--accent2)">茭白主题已有素材：山高气温低、山泉水灌溉、口感甜可生吃、扳茭白劳作、妈妈送水——与 A 视频内容高度同题，可直接对标。</div>
+      <div class="note">B 方数据为定位盘点，非实抓；对比聚焦「可迁移规律」。</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">02</span><h2>账号画像对比</h2></div>
+  <div class="sec-desc">A 是「内容即供应链」的成熟账号；B 是零起点起号，应学其结构而非其体量。</div>
+  <div class="card">
+    <table>
+      <tr><th>维度</th><th>金东大酒店（A）</th><th>金梅姐定位（B）</th><th>差距动作</th></tr>
+      <tr><td>粉丝 / 获赞</td><td class="a">53.8万 / 1060.6万</td><td>未起量</td><td>学内容结构，不追体量</td></tr>
+      <tr><td>账号逻辑</td><td class="a">特产带货 + 家乡内容双轮</td><td>先内容后变现</td><td>起号期只做信任不做卖货</td></tr>
+      <tr><td>人物体系</td><td class="a">奕琴 + 妈妈 + 孩子们，固定出镜</td><td>妈妈、家人可出镜</td><td><b>固定人物 = 最优先补齐项</b></td></tr>
+      <tr><td>发布节奏</td><td class="a">农事节气驱动（茭白季=集中产出）</td><td>节气驱动同构</td><td>按 22 主题的时令排片</td></tr>
+      <tr><td>爆款率</td><td class="a">单条 1.9万赞（4分钟长视频）</td><td>—</td><td>长视频在本赛道成立</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">03</span><h2>内容分类对比</h2></div>
+  <div class="sec-desc">样本为单一视频，按该视频结构归类；B 按主题库映射。</div>
+  <div class="card">
+    <table>
+      <tr><th>分类</th><th>A（样本视频）</th><th>B（对应资产）</th></tr>
+      <tr><td>主题</td><td class="a">农事收获（茭白）</td><td>茭白 / 晒秋腌菜 等 22 主题同型</td></tr>
+      <tr><td>形式</td><td class="a">全程旁白型 + 纪实跟拍</td><td>同型可迁移</td></tr>
+      <tr><td>时长</td><td class="a">&gt;60秒（约4分钟，章节式推进）</td><td>建议 60-90 秒起步，跑通后加长</td></tr>
+      <tr><td>情绪</td><td class="a">温暖 + 自豪（辛苦不被辜负）</td><td>同构：温暖共鸣为底</td></tr>
+    </table>
+    <div class="note">关键发现：A 的 4 分钟长视频在本赛道跑出 1.9万赞——「章节式推进」（生长环境→送水→收获售卖→结语）支撑了完播，推翻「乡村内容必须短」的假设。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">04</span><h2>文案风格对比</h2></div>
+  <div class="sec-desc">A 的标题文案 vs 金梅姐风格规则下的同题写法。</div>
+  <div class="card">
+    <table>
+      <tr><th>维度</th><th>A 样本文案</th><th>B 金梅姐规则</th></tr>
+      <tr><td>文案</td><td class="a">又到了茭白收获的季节，日晒雨淋，风吹泥浸，庄稼人守着这片茭白田，只愿日复一日的辛苦不被辜负！</td><td>「我今天去扳茭白，山泉水里长的，掰一根生吃是甜的……」</td></tr>
+      <tr><td>字数</td><td class="a">约 48 字，四字排比 x2</td><td>30-50 字，短句白话</td></tr>
+      <tr><td>句式</td><td class="a">排比 + 拟人（风吹泥浸 / 守着 / 不被辜负）</td><td>主语先行 + 事实细节（黑名单过滤修辞堆砌）</td></tr>
+      <tr><td>视角</td><td class="a">无主语（庄稼人）</td><td>第一人称「我 / 我们」</td></tr>
+      <tr><td>情感落点</td><td class="a">辛苦不被辜负（期待回报）</td><td>甜、鲜、热气（即时感官）</td></tr>
+    </table>
+    <div class="note">A 文案供「标题位」使用没问题；口播若照搬会显「文案腔」。金梅姐的差异化恰在：把 A 的旁白腔换成自己嘴里说出来的话。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">05</span><h2>文案诗意度对比</h2></div>
+  <div class="sec-desc">按 skill 0-5 档校准（目标 ≤2.5）。</div>
+  <div class="card">
+    <table>
+      <tr><th>档位</th><th>特征</th><th>A 样本</th><th>B 规则</th></tr>
+      <tr><td>0-1</td><td>纯大白话 / 口语+细节</td><td></td><td class="a"><b>目标档（1-2）</b></td></tr>
+      <tr><td>2-2.5</td><td>口语+对比 / 一点画面感</td><td class="a"></td><td class="a">允许上限</td></tr>
+      <tr><td>3</td><td>开始文学化（四字排比连用）</td><td class="a"><b>A≈3「日晒雨淋，风吹泥浸」</b></td><td></td></tr>
+    </table>
+    <div class="note">结论：A 的标题文案诗意度 3，超金梅姐上限——只借它的「守着这片田」情感结构，不借修辞密度。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">06</span><h2>用户心理路径对比（核心）</h2></div>
+  <div class="sec-desc">观众看 A 这条 4 分钟视频的心理旅程，以及金梅姐同题复刻时每段的对应做法。</div>
+  <div class="path-stage"><div class="stage-t">触发期 <small>0-0.5秒</small></div><div class="psy">心理：这是什么？→ 满田茭白 + 收获动作，画面即答案</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>茭白田实拍开场，绿色占满屏</div><div class="b"><div class="lab">金梅姐对应</div>同题实拍即可；可加一句人声「来了来了，扳茭白咯」更抓人</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">判断期 <small>0.5-3秒</small></div><div class="psy">心理：要不要看？→ 标题「收获的季节 + 辛苦不被辜负」给出预期</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>标题位排比文案造势</div><div class="b"><div class="lab">金梅姐对应</div>标题说人话：「山泉水养出来的茭白，生吃是甜的」——好奇钩更具体</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">投入期 <small>3-10秒</small></div><div class="psy">心理：他在做什么？→ 00:26 起讲生长环境：山高水冷、山泉水、可生吃</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>知识点给足（产地优势）</div><div class="b"><div class="lab">金梅姐对应</div>触发库茭白主题同款素材：山高气温低、泉水灌溉——直接可用</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">沉浸期 <small>10秒-结尾</small></div><div class="psy">心理：然后呢？→ 01:43 妈妈送水情节，孩子继续劳作，亲情线接住注意力</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>人物情节让 4 分钟立得住</div><div class="b"><div class="lab">金梅姐对应</div><b>最该学的一段</b>：妈妈送水 = 家庭连续剧锚点，金梅姐的「妈妈」同样能扛住长视频</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">决策期 <small>看完</small></div><div class="psy">心理：要做什么？→ 03:39 收获售卖价格好（助农闭环，收藏+转发动机）</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>卖点上价值（藏 1784 &gt; 转 819 佐证）</div><div class="b"><div class="lab">金梅姐对应</div>起号期先不做售卖，以「收藏级」乡土知识收尾</div></div>
+  </div>
+  <div class="path-stage"><div class="stage-t">留存期 <small>看完之后</small></div><div class="psy">心理：还想看下一条吗？→「奕琴家」系列人设，追更理由</div>
+    <div class="vs"><div class="a"><div class="lab">A 的做法</div>家庭角色贯穿全账号</div><div class="b"><div class="lab">金梅姐对应</div>固定妈妈/家人出镜 + 22 主题节气排片 = 同款追更结构</div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">07</span><h2>心理触发层对比</h2></div>
+  <div class="sec-desc">零层划走 → 一层共鸣 → 二层好奇 → 三层互动。</div>
+  <div class="card">
+    <table>
+      <tr><th>触发层</th><th>A 样本表现</th><th>证据</th><th>金梅姐可达层</th></tr>
+      <tr><td>一层 · 共鸣</td><td class="a">✓ 庄稼人辛苦</td><td>赞 1.9万</td><td>✓ 同构</td></tr>
+      <tr><td>二层 · 好奇</td><td class="a">✓ 山泉水茭白可生吃</td><td>藏 1784（收藏沉淀知识）</td><td>✓ 触发库 22 主题都是「没见过/想试」型素材</td></tr>
+      <tr><td>三层 · 互动</td><td class="a">△ 互动偏弱</td><td>评 977 相对偏低，视频无提问钩子</td><td><b>反超机会点</b>：结尾加提问（你家乡的茭白怎么吃？）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">08</span><h2>流量逻辑对比</h2></div>
+  <div class="sec-desc">A 同时打中三层流量池；标签组合是教科书级。</div>
+  <div class="card">
+    <table>
+      <tr><th>流量池</th><th>触发情绪</th><th>A 的命中</th><th>B 的对应</th></tr>
+      <tr><td>共鸣层</td><td>我也想回家/我也辛苦</td><td class="a">✓「辛苦不被辜负」</td><td>✓ 同构</td></tr>
+      <tr><td>好奇层</td><td>这个没见过</td><td class="a">✓ 山泉水可生吃</td><td>✓ 土灶、八大碗等更稀缺</td></tr>
+      <tr><td>认同层</td><td>和我老家一样</td><td class="a">✓ 庄稼人身份</td><td>✓ 同构</td></tr>
+    </table>
+    <div class="note">涨粉效率判断：A 有固定人物 + 内容不同质（跟着农事走）→ 看的人愿意关注。这正是 B 起号期要复制的结构。平台活动标签 #新农人计划 是流量扶持入口，B 每条必带。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">09</span><h2>人设逻辑对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>要素</th><th>A</th><th>B 定位</th></tr>
+      <tr><td>身份</td><td class="a">家乡特产店主 + 庄稼人家庭</td><td>家乡女儿/木兰学员</td></tr>
+      <tr><td>关系</td><td class="a">奕琴—妈妈—孩子们（血缘可见）</td><td>与妈妈/家人的日常（同构可得）</td></tr>
+      <tr><td>态度</td><td class="a">不卖惨、不教学，辛苦平视呈现</td><td>规则一致：不编造、不煽情</td></tr>
+    </table>
+    <div class="note">信任链路：A 的「酒店老板回村种茭白」反差身份是记忆点；金梅姐不需要反差，靠「每句话都是真事」走真实系路线，与 A 的信任逻辑殊途同归。</div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">10</span><h2>标签策略对比</h2></div>
+  <div class="card">
+    <table>
+      <tr><th>层</th><th>作用</th><th>A 样本</th><th>金梅姐建议</th></tr>
+      <tr><td>大流量池</td><td>平台活动扶持</td><td class="a">#新农人计划 ✓</td><td>每条必带（同类活动标签）</td></tr>
+      <tr><td>中流量池</td><td>精准人群</td><td class="a">#助农 #三农 ✓</td><td>#乡村生活 #我的农村生活</td></tr>
+      <tr><td>小流量池</td><td>搜索匹配</td><td class="a">#茭白 #我的乡村生活 ✓</td><td>主题词（#茭白 #土灶 #晒秋）</td></tr>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">11</span><h2>七层底层逻辑对照</h2></div>
+  <div class="sec-desc">每层标注用户心理，A vs B 对照。</div>
+  <div class="grid2">
+    <div class="card"><b>1 身份定位</b><p class="note" style="margin:6px 0 10px">心理：「我想了解这个人」</p><div class="vs"><div class="a"><div class="lab">A</div>特产店主种茭白，身份即卖点</div><div class="b"><div class="lab">B</div>身份待显性化：每条视频固定自我称谓</div></div></div>
+    <div class="card"><b>2 信任链路</b><p class="note" style="margin:6px 0 10px">心理：「我信他说的」</p><div class="vs"><div class="a"><div class="lab">A</div>自种自卖，全程纪实</div><div class="b"><div class="lab">B</div>「不编造」是铁规则，天然可信</div></div></div>
+    <div class="card"><b>3 情绪深度</b><p class="note" style="margin:6px 0 10px">心理：「我被触动了」</p><div class="vs"><div class="a"><div class="lab">A</div>辛苦→不被辜负（心疼向）</div><div class="b"><div class="lab">B</div>妈妈送水式细节即心疼感，素材已备</div></div></div>
+    <div class="card"><b>4 内容护城河</b><p class="note" style="margin:6px 0 10px">心理：「只有他有这个内容」</p><div class="vs"><div class="a"><div class="lab">A</div>自有茭白田 + 奕琴家不可复制</div><div class="b"><div class="lab">B</div>22 主题 + 金梅姐本人的乡音乡事</div></div></div>
+    <div class="card"><b>5 算法标签</b><p class="note" style="margin:6px 0 10px">心理：「这就是我想看的」</p><div class="vs"><div class="a"><div class="lab">A</div>人设稳定 → 推荐精准</div><div class="b"><div class="lab">B</div>起号期坚持同赛道发布，养标签</div></div></div>
+    <div class="card"><b>6 用户心理路径</b><p class="note" style="margin:6px 0 10px">心理：「我想看他的下一条」</p><div class="vs"><div class="a"><div class="lab">A</div>人让人想关注（风景只是背景）</div><div class="b"><div class="lab">B</div>人物出镜优先于风景空镜</div></div></div>
+    <div class="card"><b>7 信息聚焦</b><p class="note" style="margin:6px 0 10px">心理：「我知道我在看什么」</p><div class="vs"><div class="a"><div class="lab">A</div>一个视频一件事：茭白收获</div><div class="b"><div class="lab">B</div>22 主题一题一拍，结构同款</div></div></div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head"><span class="num">12</span><h2>数据可视化</h2></div>
+  <div class="sec-desc">样本互动结构 + 账号体量对比。</div>
+  <div class="grid2">
+    <div class="card"><div id="c1" class="chart"></div></div>
+    <div class="card"><div id="c2" class="chart"></div></div>
+  </div>
+</section>
+
+<div class="sum">
+  <h2>差异总结</h2>
+  <p>共同规律：乡村赛道里「固定人物 + 农事节气 + 三层流量池标签」的组合已被 A 验证；长视频（4分钟）在此赛道成立。核心差距：A 靠「奕琴家」人物体系与平台活动标签拿到结果，其标题文案修辞偏文学化（诗意度 3），金梅姐若照搬会丢掉自己「朴实真话」的差异化。</p>
+  <p style="margin-top:10px">一句话结论：<b style="color:var(--accent)">借 A 的结构（人物+章节+标签），用 B 的嘴（口语+细节+第一人称）</b>。金梅姐的茭白视频直接对标此样本：山泉水可生吃做钩子，妈妈送水式细节做沉浸段，结尾加一个提问补互动短板。</p>
+  <div class="stats">
+    <div class="stat"><b>53.8万</b><span>对标账号粉丝</span></div>
+    <div class="stat"><b>1.9万</b><span>样本视频获赞</span></div>
+    <div class="stat"><b>1784</b><span>收藏数（知识型内容信号）</span></div>
+    <div class="stat"><b>977</b><span>评论数（互动短板 = 我方机会）</span></div>
+  </div>
+</div>
+
+</div>
+<script>
+const C = { accent:'#7c5cbf', accent2:'#d4615a', accent3:'#b8915e', ink:'#2e2a40', muted:'#6b6580', rule:'rgba(90,70,140,0.1)' };
+const mk = (id, opt) => { const el = document.getElementById(id); if (!el) return; const c = echarts.init(el, null, { renderer:'svg' }); c.setOption(Object.assign({ tooltip:{}, animation:false, textStyle:{ color:C.muted } }, opt)); window.addEventListener('resize', () => c.resize()); };
+mk('c1', {
+  title:{ text:'样本视频互动结构', left:'center', textStyle:{ color:C.ink, fontSize:14 } },
+  xAxis:{ type:'category', data:['赞','评论','收藏','转发'] },
+  yAxis:{ type:'value' },
+  series:[{ type:'bar', data:[
+    { value:19000, itemStyle:{ color:C.accent } },
+    { value:977, itemStyle:{ color:C.accent2 } },
+    { value:1784, itemStyle:{ color:C.accent3 } },
+    { value:819, itemStyle:{ color:'#9b95ad' } }],
+    barWidth:'52%', label:{ show:true, position:'top', color:C.muted } }]
+});
+mk('c2', {
+  title:{ text:'对标账号体量（万）', left:'center', textStyle:{ color:C.ink, fontSize:14 } },
+  xAxis:{ type:'category', data:['粉丝','获赞'] },
+  yAxis:{ type:'value' },
+  series:[{ type:'bar', data:[{ value:53.8, itemStyle:{ color:C.accent } }, { value:1060.6, itemStyle:{ color:C.accent3 } }], barWidth:'52%', label:{ show:true, position:'top', color:C.muted } }]
+});
+</script>
+</body>
+</html>
