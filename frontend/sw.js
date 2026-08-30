@@ -1,4 +1,4 @@
-const CACHE_NAME = "taxiangji-pwa-v8";
+const CACHE_NAME = "taxiangji-pwa-v9";
 const ASSETS = [
   "./",
   "./index.html",

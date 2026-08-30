@@ -220,6 +220,22 @@ class Handler(SimpleHTTPRequestHandler):
     # SSL 环境下 buffered reader 读 POST body 会异常阻塞，改用无缓冲读
     rbufsize = 0
 
+    def _read_exact(self, n, timeout=15):
+        """SSLObject.read 可能返回不足 n 字节，循环读满"""
+        self.connection.settimeout(timeout)
+        raw = b""
+        while len(raw) < n:
+            try:
+                part = self.rfile.read(n - len(raw))
+            except Exception as e:
+                print(f"[BODY] 读超时 已读{len(raw)}/{n}: {e}", flush=True)
+                break
+            if not part:
+                break
+            raw += part
+        self.connection.settimeout(None)
+        return raw
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=FRONTEND, **kwargs)
 
@@ -287,8 +303,8 @@ class Handler(SimpleHTTPRequestHandler):
 
         if u.path == "/api/stt":
             n = int(self.headers.get("Content-Length", 0) or 0)
-            audio = self.rfile.read(n)
-            audio_type = self.headers.get("X-Audio-Type", "audio/webm")
+            audio = self._read_exact(n, timeout=30)
+            audio_type = self.headers.get("X-Audio-Type", "audio/wav")
             text, err = call_stt(audio, audio_type)
             if err:
                 print(f"[STT] 失败：{err}", flush=True)
@@ -304,17 +320,7 @@ class Handler(SimpleHTTPRequestHandler):
         if u.path == "/api/chat":
             print("[CHAT] 收到请求", flush=True)
             n = int(self.headers.get("Content-Length", 0) or 0)
-            self.connection.settimeout(15)
-            raw = b""
-            try:
-                while len(raw) < n:
-                    part = self.rfile.read(n - len(raw))
-                    if not part:
-                        break
-                    raw += part
-            except Exception as e:
-                print(f"[CHAT] 读body异常 已读{len(raw)}/{n}: {e}", flush=True)
-            self.connection.settimeout(None)
+            raw = self._read_exact(n)
             print(f"[CHAT] body就绪 {len(raw)}/{n}", flush=True)
             try:
                 data = json.loads(raw.decode("utf-8")) if raw else {}

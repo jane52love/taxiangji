@@ -422,9 +422,10 @@ function setupVoice() {
   const voiceBtn = $("#voiceDisplay");
   const statusEl = $("#voiceStatus");
   const setStatus = (t) => { statusEl.textContent = t; };
-  let recorder = null, chunks = [], micStream = null, listening = false;
+  let micStream = null, listening = false;
   let useFallback = false, recognition = null, finalText = "";
-  let audioCtx = null, analyser = null, rafId = 0;
+  let captureCtx = null, captureNode = null, analyser = null, rafId = 0;
+  let pcmChunks = [], captureRate = 44100;
 
   /* --- 录音中的实时音量反馈（证明声音被收录） --- */
   function startMeter() {
@@ -436,13 +437,6 @@ function setupVoice() {
       voiceBtn.appendChild(meter);
     }
     const bars = [...meter.querySelectorAll("span")];
-    try {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
-      analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 256;
-      audioCtx.createMediaStreamSource(micStream).connect(analyser);
-    } catch { return; }
     const data = new Uint8Array(analyser.frequencyBinCount);
     const tick = () => {
       if (!analyser) return;
@@ -459,35 +453,69 @@ function setupVoice() {
   function stopMeter() {
     cancelAnimationFrame(rafId);
     analyser = null;
-    if (audioCtx) { audioCtx.close().catch(() => {}); audioCtx = null; }
   }
 
-  /* --- 主路径：按住录音 → 松开整段送服务端转写 --- */
+  function encodeWav(merged, sampleRate) {
+    const buf = new ArrayBuffer(44 + merged.length * 2);
+    const v = new DataView(buf);
+    const ws = (o, s) => { for (let i = 0; i < s.length; i++) v.setUint8(o + i, s.charCodeAt(i)); };
+    ws(0, "RIFF"); v.setUint32(4, 36 + merged.length * 2, true); ws(8, "WAVE");
+    ws(12, "fmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+    v.setUint32(24, sampleRate, true); v.setUint32(28, sampleRate * 2, true);
+    v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+    ws(36, "data"); v.setUint32(40, merged.length * 2, true);
+    let o = 44;
+    for (let i = 0; i < merged.length; i++, o += 2) {
+      const s = Math.max(-1, Math.min(1, merged[i]));
+      v.setInt16(o, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    }
+    return new Blob([buf], { type: "audio/wav" });
+  }
+
+  /* --- 主路径：按住录音（直接采 PCM 编码 WAV，识别服务兼容性最好） --- */
   async function startRecording() {
-    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mime = ["audio/webm", "audio/mp4", "audio/ogg"].find((m) => MediaRecorder.isTypeSupported(m)) || "";
-    recorder = new MediaRecorder(micStream, mime ? { mimeType: mime } : undefined);
-    chunks = [];
-    recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
-    recorder.onstop = transcribe;
-    recorder.start(250);
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    const AC = window.AudioContext || window.webkitAudioContext;
+    captureCtx = new AC();
+    if (captureCtx.state === "suspended") await captureCtx.resume().catch(() => {});
+    captureRate = captureCtx.sampleRate;
+    const src = captureCtx.createMediaStreamSource(micStream);
+    analyser = captureCtx.createAnalyser();
+    analyser.fftSize = 256;
+    src.connect(analyser);
+    pcmChunks = [];
+    const code = 'class P extends AudioWorkletProcessor{process(inputs){const ch=inputs[0]&&inputs[0][0];if(ch&&ch.length)this.port.postMessage(ch.slice(0));return true}}registerProcessor("pcm-capture",P)';
+    await captureCtx.audioWorklet.addModule(URL.createObjectURL(new Blob([code], { type: "application/javascript" })));
+    captureNode = new AudioWorkletNode(captureCtx, "pcm-capture");
+    captureNode.port.onmessage = (e) => { if (listening) pcmChunks.push(new Float32Array(e.data)); };
+    src.connect(captureNode); // 不连扬声器，避免回声
     listening = true;
     voiceBtn.classList.add("recording");
     startMeter();
     setStatus("录音中，请说你的场景和想表达的话（松开结束）……");
   }
 
+  function stopRecording() {
+    if (captureNode) { captureNode.port.onmessage = null; try { captureNode.disconnect(); } catch { /* */ } captureNode = null; }
+    if (micStream) { micStream.getTracks().forEach((t) => t.stop()); micStream = null; }
+    if (captureCtx) { captureCtx.close().catch(() => {}); captureCtx = null; }
+  }
+
   async function transcribe() {
     stopMeter();
-    if (micStream) { micStream.getTracks().forEach((t) => t.stop()); micStream = null; }
-    const blob = new Blob(chunks, { type: (recorder && recorder.mimeType) || "audio/webm" });
-    recorder = null;
-    if (blob.size < 1200) { setStatus("没听到内容，请再按住说一次。"); return; }
+    stopRecording();
+    const total = pcmChunks.reduce((n, c) => n + c.length, 0);
+    const merged = new Float32Array(total);
+    let off = 0;
+    for (const c of pcmChunks) { merged.set(c, off); off += c.length; }
+    pcmChunks = [];
+    if (merged.length < captureRate * 0.4) { setStatus("没听到内容，请再按住说一次。"); return; }
+    const blob = encodeWav(merged, captureRate);
     setStatus("识别中……");
     try {
       const res = await fetch("/api/stt", {
         method: "POST",
-        headers: { "Content-Type": "application/octet-stream", "X-Audio-Type": blob.type },
+        headers: { "Content-Type": "application/octet-stream", "X-Audio-Type": "audio/wav" },
         body: blob
       });
       const data = await res.json().catch(() => ({}));
@@ -565,20 +593,19 @@ function setupVoice() {
     }
     if (listening) return;
     if (useFallback) return startWebSpeech();
-    if (!navigator.mediaDevices || !window.MediaRecorder) {
+    if (!navigator.mediaDevices || !window.AudioWorkletNode) {
       if (SR) { useFallback = true; return startWebSpeech(); }
       setStatus("当前环境不支持语音输入，请改用文字。");
       return;
     }
     startRecording()
-      .catch((err) => { stopMeter(); setStatus("无法访问麦克风：" + (err.message || err.name)); });
+      .catch((err) => { stopMeter(); stopRecording(); setStatus("无法访问麦克风：" + (err.message || err.name)); });
   };
   const stopPress = () => {
     if (!listening) return;
     listening = false;
     voiceBtn.classList.remove("recording");
-    stopMeter();
-    if (recorder && recorder.state !== "inactive") { try { recorder.stop(); } catch { /* */ } }
+    if (captureNode) transcribe();
     if (recognition) { try { recognition.stop(); } catch { /* */ } }
   };
 
