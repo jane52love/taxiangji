@@ -232,61 +232,6 @@ function updateComposerMode() {
 
 /* ---------------- 素材保存 ---------------- */
 
-function extractTitle() {
-  const userText = [...messages].reverse().find((message) => message.role === "user")?.text || currentSkill.title;
-  return userText.replace(/[^\u4e00-\u9fa5a-zA-Z0-9]/g, "").slice(0, 12) || "新的家乡故事";
-}
-
-function pad(num) {
-  return String(num).padStart(2, "0");
-}
-
-function buildContentMd() {
-  const lastReply = [...messages].reverse().find((message) => message.role === "assistant" && message.md);
-  if (lastReply) return lastReply.text;
-  const title = extractTitle();
-  return [
-    `# ${title}`,
-    "",
-    `> 注：本条为对话记录归档（尚无最终成稿）。`,
-    "",
-    "## 对话内容",
-    messages.map((message) => `### ${message.role === "user" ? "木兰" : "她乡记"}\n${message.text}`).join("\n\n")
-  ].join("\n");
-}
-
-async function saveCurrentMaterial() {
-  if (messages.length === 0) { alert("还没有可以保存的对话。"); return; }
-  const now = new Date();
-  const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
-  const folderName = `${stamp}-${extractTitle()}`;
-  const material = {
-    folderName,
-    contentMd: buildContentMd(),
-    images: uploadedImages.map(({ name, dataUrl }) => ({ name, dataUrl }))
-  };
-
-  try {
-    const res = await fetch("/api/save", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(material)
-    });
-    if (!res.ok) throw new Error("save unavailable");
-    const data = await res.json();
-    alert(`已保存到项目文件夹：\n${data.path}\n（文案.md + ${data.images} 张图片）`);
-    return;
-  } catch {
-    // 桥接不可用 → 本地演示保存
-  }
-
-  const materials = storageGet("taxiangji-materials", sampleMaterials());
-  materials.unshift({ ...material, skillId: currentSkill.id, title: extractTitle(), createdAt: now.toISOString() });
-  storageSet("taxiangji-materials", materials);
-  renderMaterials();
-  alert(`已保存（浏览器本地演示）：${folderName}`);
-}
-
 function sampleMaterials() {
   return [
     {
@@ -543,7 +488,7 @@ function bindEvents() {
     if (id) startSkill(id);
   });
 
-  $("#openNav").addEventListener("click", () => {
+  $("#brandHome").addEventListener("click", () => {
     $(".app-shell").classList.remove("chatting");
     $("#loadingSkill").classList.remove("active");
     messages = [];
@@ -554,7 +499,6 @@ function bindEvents() {
   document.querySelectorAll(".returnChat").forEach((button) => {
     button.addEventListener("click", () => showScreen("homeScreen"));
   });
-  $("#saveMaterial").addEventListener("click", saveCurrentMaterial);
   $("#sendMessage").addEventListener("click", () => sendToAgent($("#textInput").value));
   $("#keyboardButton").addEventListener("click", () => {
     const isVoiceMode = document.body.classList.contains("voice-mode");

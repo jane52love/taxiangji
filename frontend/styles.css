@@ -66,6 +66,19 @@ button {
   flex: 1;
 }
 
+.brand-home {
+  flex: 1;
+  display: block;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
 .brand-mark,
 .panel-label {
   margin: 0 0 6px;
