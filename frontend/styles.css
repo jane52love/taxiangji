@@ -444,12 +444,15 @@ body.text-mode .voice-display {
   display: none;
 }
 
-.voice-display.recording {
-  color: var(--red);
+.voice-display {
   touch-action: none;
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+}
+
+.voice-display.recording {
+  color: var(--red);
 }
 
 .input-bar {

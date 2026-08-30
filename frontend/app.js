@@ -395,65 +395,90 @@ function setupVoice() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const voiceBtn = $("#voiceDisplay");
   const statusEl = $("#voiceStatus");
-  let recognition = null;
-  let listening = false;
-  let finalText = "";
+  const setStatus = (t) => { statusEl.textContent = t; };
+  let recorder = null, chunks = [], micStream = null, listening = false;
+  let useFallback = false, recognition = null, finalText = "";
 
-  const resetUI = () => {
-    listening = false;
-    voiceBtn.classList.remove("recording");
-  };
-
-  const finishToText = () => {
-    document.body.classList.remove("voice-mode");
-    $("#textInput").focus();
-    updateComposerMode();
-  };
-
-  if (SR) {
-    recognition = new SR();
-    recognition.lang = "zh-CN";
-    recognition.continuous = true;       // 按住期间持续听
-    recognition.interimResults = true;   // 实时上屏
-    recognition.onresult = (event) => {
-      let interim = "", final = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const t = event.results[i][0].transcript;
-        if (event.results[i].isFinal) final += t;
-        else interim += t;
-      }
-      if (final) finalText += final;
-      $("#textInput").value = (finalText + interim).trim();
-      statusEl.textContent = "松开结束，内容已放进输入框，可修改后发送。";
-      updateComposerMode();
-    };
-    recognition.onerror = (event) => {
-      resetUI();
-      const msgs = {
-        network: "语音服务网络不通（浏览器语音识别需访问外部服务），请改用文字输入。",
-        "not-allowed": "麦克风权限被拒绝，请在浏览器设置中允许后重试。",
-        "service-not-allowed": "语音服务不可用，请改用文字输入。",
-        "no-speech": "没听到内容，请再按住说一次。",
-        "audio-capture": "没有检测到麦克风。",
-        aborted: ""
-      };
-      if (event.error !== "aborted") statusEl.textContent = msgs[event.error] || `语音识别出错（${event.error}），可改用文字输入。`;
-    };
-    recognition.onend = () => {
-      const hadError = statusEl.textContent.includes("出错") || statusEl.textContent.includes("不通") || statusEl.textContent.includes("拒绝");
-      resetUI();
-      if (!hadError) statusEl.textContent = "松开结束，内容已放进输入框，可修改后发送。";
-      finishToText();
-    };
+  /* --- 主路径：按住录音 → 松开整段送服务端转写 --- */
+  async function startRecording() {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mime = ["audio/webm", "audio/mp4", "audio/ogg"].find((m) => MediaRecorder.isTypeSupported(m)) || "";
+    recorder = new MediaRecorder(micStream, mime ? { mimeType: mime } : undefined);
+    chunks = [];
+    recorder.ondataavailable = (e) => { if (e.data.size) chunks.push(e.data); };
+    recorder.onstop = transcribe;
+    recorder.start(250);
+    listening = true;
+    voiceBtn.classList.add("recording");
+    setStatus("正在听，请说你的场景和想表达的话……");
   }
 
-  const startListening = () => {
-    if (listening) return;
-    if (!recognition) {
-      statusEl.textContent = "当前浏览器不支持语音识别，已为你切换文字输入。";
-      document.body.classList.remove("voice-mode");
+  async function transcribe() {
+    if (micStream) { micStream.getTracks().forEach((t) => t.stop()); micStream = null; }
+    const blob = new Blob(chunks, { type: (recorder && recorder.mimeType) || "audio/webm" });
+    recorder = null;
+    if (blob.size < 1200) { setStatus("没听到内容，请再按住说一次。"); return; }
+    setStatus("识别中……");
+    try {
+      const res = await fetch("/api/stt", {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream", "X-Audio-Type": blob.type },
+        body: blob
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.error) throw new Error(data.error || `识别失败（${res.status}）`);
+      const text = (data.text || "").trim();
+      if (!text) throw new Error("没听到内容，请再按住说一次");
+      $("#textInput").value = text;
+      setStatus("已识别，放进输入框，可修改后发送。");
+      updateComposerMode();
       $("#textInput").focus();
-      return;
+    } catch (err) {
+      if (SR && /未配置|识别服务/.test(err.message)) {
+        useFallback = true;
+        setStatus("服务端语音识别未配置，本次改用浏览器识别，请再按住一次。");
+      } else {
+        setStatus(`识别失败：${err.message}`);
+      }
+    }
+  }
+
+  /* --- 降级路径：浏览器流式识别（电脑 Chrome 可用） --- */
+  function startWebSpeech() {
+    if (!SR) { setStatus("当前环境不支持语音输入，请改用文字。"); return; }
+    if (!recognition) {
+      recognition = new SR();
+      recognition.lang = "zh-CN";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.onresult = (event) => {
+        let interim = "", final = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const t = event.results[i][0].transcript;
+          if (event.results[i].isFinal) final += t;
+          else interim += t;
+        }
+        if (final) finalText += final;
+        $("#textInput").value = (finalText + interim).trim();
+        updateComposerMode();
+      };
+      recognition.onerror = (event) => {
+        listening = false;
+        voiceBtn.classList.remove("recording");
+        const msgs = {
+          network: "浏览器语音服务网络不通，请在 桥接/config.json 配置识别服务，或改用文字输入。",
+          "not-allowed": "麦克风权限被拒绝，请在浏览器设置中允许后重试。",
+          "no-speech": "没听到内容，请再按住说一次。"
+        };
+        if (event.error !== "aborted") setStatus(msgs[event.error] || `语音识别出错（${event.error}）`);
+      };
+      recognition.onend = () => {
+        listening = false;
+        voiceBtn.classList.remove("recording");
+        setStatus("已识别，放进输入框，可修改后发送。");
+        updateComposerMode();
+        $("#textInput").focus();
+      };
     }
     try {
       finalText = "";
@@ -461,24 +486,34 @@ function setupVoice() {
       recognition.start();
       listening = true;
       voiceBtn.classList.add("recording");
-      statusEl.textContent = "正在听，请说你的场景和想表达的话……";
+      setStatus("正在听，请说你的场景和想表达的话……");
     } catch { /* 重复 start 忽略 */ }
-  };
+  }
 
-  const stopListening = (abort = false) => {
-    if (!listening || !recognition) return;
-    try { abort ? recognition.abort() : recognition.stop(); } catch { /* */ }
-  };
-
-  // 按住说话：按下开始，松开结束
-  voiceBtn.addEventListener("pointerdown", (e) => {
+  /* --- 按住说话：按下开始，松开结束 --- */
+  const startPress = (e) => {
     e.preventDefault();
-    startListening();
-  });
-  voiceBtn.addEventListener("pointerup", () => stopListening(false));
-  voiceBtn.addEventListener("pointercancel", () => stopListening(true));
-  voiceBtn.addEventListener("pointerleave", () => stopListening(false));
-  // 防止长按触发系统菜单/选中
+    try { voiceBtn.setPointerCapture(e.pointerId); } catch { /* */ }
+    if (listening) return;
+    if (useFallback) return startWebSpeech();
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      if (SR) { useFallback = true; return startWebSpeech(); }
+      setStatus("当前环境不支持语音输入，请改用文字。");
+      return;
+    }
+    startRecording().catch((err) => setStatus("无法访问麦克风：" + (err.message || err.name)));
+  };
+  const stopPress = () => {
+    if (!listening) return;
+    listening = false;
+    voiceBtn.classList.remove("recording");
+    if (recorder && recorder.state !== "inactive") { try { recorder.stop(); } catch { /* */ } }
+    if (recognition) { try { recognition.stop(); } catch { /* */ } }
+  };
+
+  voiceBtn.addEventListener("pointerdown", startPress);
+  voiceBtn.addEventListener("pointerup", stopPress);
+  voiceBtn.addEventListener("pointercancel", stopPress);
   voiceBtn.addEventListener("contextmenu", (e) => e.preventDefault());
 }
 

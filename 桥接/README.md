@@ -34,6 +34,25 @@
 
 3. 页面长轮询 `/api/poll` 取到回复后渲染，服务端读后即删 outbox 文件。
 
+## 语音识别（按住说话 · push-to-talk）
+
+前端按住「按住说话」录音（MediaRecorder），松开后整段音频 `POST /api/stt`（原始字节，`X-Audio-Type` 头声明格式），服务端转发给 OpenAI 兼容的转写接口，返回 `{"text": "..."}`。
+
+转写服务在 `桥接/config.json` 配置（模板见 `config.example.json`，此文件含密钥已 gitignore）：
+
+```json
+{
+  "stt": {
+    "base_url": "https://api.siliconflow.cn",
+    "api_key": "sk-xxx",
+    "model": "FunAudioLLM/SenseVoiceSmall"
+  }
+}
+```
+
+- 兼容任何 OpenAI `/v1/audio/transcriptions` 格式的服务（硅基流动 SenseVoice、OpenAI whisper 等）
+- 未配置时返回 503，前端自动降级浏览器识别（电脑 Chrome 可用，手机国内网络通常不通），再不行提示文字输入
+
 ## 素材归档
 
 页面点「保存」→ `POST /api/save` → 服务直接写真实文件夹 `我的素材/YYYY-MM-DD-标题/`（文案.md + 图片按序编号）。

@@ -30,6 +30,7 @@ OUTBOX = os.path.join(BRIDGE_DIR, "outbox")
 INBOX_IMAGES = os.path.join(INBOX, "images")
 MATERIALS = os.path.join(ROOT, "我的素材")
 KB_DIR = os.path.join(ROOT, "我的知识", "场景触发库")
+CONFIG_PATH = os.path.join(BRIDGE_DIR, "config.json")
 
 for d in (INBOX, INBOX_IMAGES, OUTBOX):
     os.makedirs(d, exist_ok=True)
@@ -55,6 +56,54 @@ def save_dataurl(dataurl, path):
     with open(path, "wb") as f:
         f.write(base64.b64decode(m.group(2)))
     return path
+
+
+def load_stt_config():
+    """语音识别配置：桥接/config.json 的 stt 段（OpenAI 兼容 transcriptions 接口）"""
+    try:
+        with open(CONFIG_PATH, encoding="utf-8") as f:
+            stt = (json.load(f) or {}).get("stt") or {}
+        if stt.get("api_key") and stt.get("base_url") and stt.get("model"):
+            return stt
+    except Exception:
+        pass
+    return None
+
+
+def call_stt(audio, audio_type):
+    stt = load_stt_config()
+    if not stt:
+        return None, "未配置语音识别服务（桥接/config.json）"
+    ext = {"audio/webm": "webm", "audio/mp4": "m4a", "audio/ogg": "ogg"}.get(audio_type, "webm")
+    boundary = "----taxiangji" + str(int(time.time() * 1000))
+    parts = [
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"model\"\r\n\r\n{stt['model']}\r\n".encode(),
+        f"--{boundary}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"speech.{ext}\"\r\nContent-Type: {audio_type}\r\n\r\n".encode(),
+        audio,
+        f"\r\n--{boundary}--\r\n".encode(),
+    ]
+    import urllib.error
+    import urllib.request
+    req = urllib.request.Request(
+        stt["base_url"].rstrip("/") + "/v1/audio/transcriptions",
+        data=b"".join(parts),
+        method="POST",
+        headers={
+            "Authorization": "Bearer " + stt["api_key"],
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            return (json.loads(resp.read().decode("utf-8")).get("text") or "").strip(), None
+    except urllib.error.HTTPError as e:
+        try:
+            detail = e.read().decode("utf-8")[:200]
+        except Exception:
+            detail = ""
+        return None, f"识别服务返回 {e.code} {detail}"
+    except Exception:
+        return None, "识别服务连接失败，请检查网络"
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -122,6 +171,18 @@ class Handler(SimpleHTTPRequestHandler):
     # ---------------- POST ----------------
     def do_POST(self):
         u = urlparse(self.path)
+
+        if u.path == "/api/stt":
+            n = int(self.headers.get("Content-Length", 0) or 0)
+            audio = self.rfile.read(n)
+            audio_type = self.headers.get("X-Audio-Type", "audio/webm")
+            text, err = call_stt(audio, audio_type)
+            if err:
+                print(f"[STT] 失败：{err}", flush=True)
+                return self._json({"error": err}, 503 if "未配置" in err else 502)
+            print(f"[STT] 识别成功 {len(audio)}B -> {text[:40]!r}", flush=True)
+            return self._json({"text": text})
+
         try:
             data = self._body()
         except Exception:
